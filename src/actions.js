@@ -1,4 +1,4 @@
-import fetch from 'isomorphic-fetch';
+import { ajax } from 'rxjs/observable/dom/ajax';
 
 export const GET_DATA_REQUESTED = 'GET_DATA_REQUESTED';
 export const GET_DATA_DONE = 'GET_DATA_DONE';
@@ -24,18 +24,11 @@ export function getDataFailed(error) {
   };
 }
 
-export function getData() {
-  return dispatch => {
-    // set state to "loading"
-    dispatch(getDataRequested());
-
-    fetch('https://api.github.com/users/burczu/repos')
-      .then(response => response.json())
-      .then(data => {
-        dispatch(getDataDone(data));
-      })
-      .catch(error => {
-        dispatch(getDataFailed(error));
-      })
-  }
+export function getDataEpic(action$) {
+  return action$.ofType(GET_DATA_REQUESTED)
+    .mergeMap(action =>
+      ajax.getJSON('https://api.github.com/users/burczu/repos')
+        .map(response => getDataDone(response))
+        .catch(error => getDataFailed(error))
+    );
 }

@@ -1,21 +1,23 @@
 import React, { PropTypes } from 'react';
 import { render } from 'react-dom';
 import { createStore, applyMiddleware } from 'redux';
-import thunk from 'redux-thunk';
+import { createEpicMiddleware } from 'redux-observable';
 import { connect, Provider } from 'react-redux';
 import * as actions from './actions';
 import { reducer } from './reducer';
+import 'rxjs';
 
+const epicMiddleware = createEpicMiddleware(actions.getDataEpic);
 const store = createStore(
   reducer,
   { isLoading: false, isError: false, repositories: [] },
-  applyMiddleware(thunk)
+  applyMiddleware(epicMiddleware)
 );
 
 class Repositories extends React.Component {
   componentDidMount() {
-    const { getData } = this.props;
-    getData();
+    const { getDataRequested } = this.props;
+    getDataRequested();
   }
 
   render() {
@@ -38,7 +40,7 @@ const mapStateToProps = (state) => {
 };
 const mapDispatchToProps = (dispatch) => {
   return {
-    getData: () => dispatch(actions.getData())
+    getDataRequested: () => dispatch(actions.getDataRequested())
   }
 };
 
